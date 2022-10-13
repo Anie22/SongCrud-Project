@@ -3,8 +3,8 @@ from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from musicapp.models import *
-from musicapp.serializers import *
+from musicapp.models import Artise, Song, Lyric
+from musicapp.serializers import ArtiseSerializer, SongSerializer, LyricSerializer
 from rest_framework import status
 from rest_framework import generics
 
@@ -28,11 +28,51 @@ class LyricDetailAPIView(generics.RetrieveAPIView):
 
 lyric_detail_view =LyricDetailAPIView.as_view()
 
+class ArtiseCreate(APIView):
+    serializer = ArtiseSerializer()
+    def get_object(self, serializer):
+        try:
+            return Artise.objects.get(serializer=serializer)
+        except Artise.DoesNotExist:
+            raise Http404
+
+    def get(self, serializer):
+        artise = self.get_object(serializer)
+        return Response(serializer.data)
+
+    def create(self, serializer):
+        first_name = serializer.get('first_name')
+        last_name = serializer.get('last_name')
+        age = serializer.get('age')
+        if first_name is None:
+            first_name = first_name
+        serializer.save(first_name=first_name)
+
+        if last_name is None:
+            last_name = last_name
+        serializer.save(last_name=last_name)
+
+        if age is None:
+            age = age
+        serializer.save(age=age)
+        ArtiseCreate.get(serializer)    
+
+# class SongList(APIView):
+#     def get(self, request, format=None):
+#         music = Song.objects.all()
+#         serializer = SongSerializer(music, many=True)
+#         return Response(serializer.data)
+
+# class LyricList(APIView):
+#     def get(self, request, format=None):
+#         music = Lyric.objects.all()
+#         serializer = LyricSerializer(music, many=True)
+      
 
 class ArtiseList(APIView):
     def get(self, request, format=None):
         music = Artise.objects.all()
-        serializer = ArtiseSerializer(music, )
+        serializer = ArtiseSerializer(music, many=True)
         return Response(serializer.data)
 
 class SongList(APIView):

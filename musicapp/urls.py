@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path('artise/<int:pk>/', views.artise_detail_view), 
     path('', views.ArtiseList.as_view()),
+    path('artise/create', views.ArtiseCreate.as_view()),
     path('artise/<int:pk>/update', views.ArtiseUpdate.as_view()),
     path('artise/<int:pk>/delete', views.ArtiseDelete.as_view()),
     path('<int:pk>/', views.song_detail_view),

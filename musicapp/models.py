@@ -4,8 +4,8 @@ from django.db import models
 # Create your models here.
 
 class Artise(models.Model):
-    first_name = models.CharField(max_length=50, null=True)
-    last_name = models.CharField(max_length=50, null=True)
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
     age = models.TextField(blank=True, null=True)
 
     def __str__(self):
@@ -21,7 +21,7 @@ class Song(models.Model):
        return self.title
     
 class Lyric(models.Model):
-    song_id = models.ForeignKey(Song, on_delete=models.CASCADE, default=True)
+    song_id = models.ForeignKey(Song, on_delete=models.CASCADE)
     content = models.TextField(max_length = 8000)
 
     def __str__(self):
