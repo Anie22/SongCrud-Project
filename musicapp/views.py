@@ -28,22 +28,14 @@ class LyricDetailAPIView(generics.RetrieveAPIView):
 
 lyric_detail_view =LyricDetailAPIView.as_view()
 
-class ArtiseCreate(APIView):
-    serializer = ArtiseSerializer()
-    def get_object(self, serializer):
-        try:
-            return Artise.objects.get(serializer=serializer)
-        except Artise.DoesNotExist:
-            raise Http404
+class ArtiseCreateAPIView(generics.CreateAPIView):
+    queryset = Artise.objects.all()
+    serializer_class = ArtiseSerializer
 
-    def get(self, serializer):
-        artise = self.get_object(serializer)
-        return Response(serializer.data)
-
-    def create(self, serializer):
-        first_name = serializer.get('first_name')
-        last_name = serializer.get('last_name')
-        age = serializer.get('age')
+    def perform_create(self, serializer):
+        first_name = serializer.validated_data.get('first_name')
+        last_name = serializer.validated_data.get('last_name')
+        age = serializer.validated_data.get('age')
         if first_name is None:
             first_name = first_name
         serializer.save(first_name=first_name)
@@ -55,18 +47,7 @@ class ArtiseCreate(APIView):
         if age is None:
             age = age
         serializer.save(age=age)
-        ArtiseCreate.get(serializer)    
-
-# class SongList(APIView):
-#     def get(self, request, format=None):
-#         music = Song.objects.all()
-#         serializer = SongSerializer(music, many=True)
-#         return Response(serializer.data)
-
-# class LyricList(APIView):
-#     def get(self, request, format=None):
-#         music = Lyric.objects.all()
-#         serializer = LyricSerializer(music, many=True)
+artise_create_view = ArtiseCreateAPIView.as_view()   
       
 
 class ArtiseList(APIView):
@@ -74,18 +55,6 @@ class ArtiseList(APIView):
         music = Artise.objects.all()
         serializer = ArtiseSerializer(music, many=True)
         return Response(serializer.data)
-
-class SongList(APIView):
-    def get(self, request, format=None):
-        music = Song.objects.all()
-        serializer = SongSerializer(music, many=True)
-        return Response(serializer.data)
-
-class LyricList(APIView):
-    def get(self, request, format=None):
-        music = Lyric.objects.all()
-        serializer = LyricSerializer(music, many=True)
-        return Response(serializer.data)        
 
 class ArtiseUpdate(APIView):
     def get_object(self, pk):
@@ -100,12 +69,11 @@ class ArtiseUpdate(APIView):
         return Response(serializer.data)
 
     def put(self, request, pk, format=None):
-        artise = self.get_object(pk)
+        artise = self.get(pk)
         serializer = ArtiseSerializer(artise, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
-
+            return Response(serializer.data)    
 
 class ArtiseDelete(APIView):
     def get_object(self, pk):
@@ -121,8 +89,40 @@ class ArtiseDelete(APIView):
 
     def delete(self, request, pk, format=None):
         artise = self.get_object(pk)
-        artise.delete()
+        artise.delete()                
 
+class SongCreateAPIView(generics.CreateAPIView):
+    queryset = Song.objects.all()
+    serializer_class = SongSerializer
+
+    def perform_create(self, serializer):
+        artise_id = serializer.validated_data.get('artise_id')
+        title  = serializer.validated_data.get('title')
+        date_released = serializer.validated_data.get('date_released')
+        likes = serializer.validated_data.get('likes')
+        if artise_id is None:
+            artise_id = artise_id
+        serializer.save(artise_id=artise_id)
+
+        if title is None:
+            title = title
+        serializer.save(title=title)
+
+        if date_released is None:
+           date_released = date_released
+        serializer.save(date_released=date_released)
+
+        if likes is None:
+           likes = likes
+        serializer.save(likes=likes)
+song_create_view = SongCreateAPIView.as_view()   
+
+class SongList(APIView):
+    def get(self, request, format=None):
+        music = Song.objects.all()
+        serializer = SongSerializer(music, many=True)
+        return Response(serializer.data)
+        
 class SongUpdate(APIView):
     def get_object(self, pk):
         try:
@@ -140,7 +140,7 @@ class SongUpdate(APIView):
         serializer = SongSerializer(song, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)       
+            return Response(serializer.data)      
 
 class SongDelete(APIView):
     def get_object(self, pk):
@@ -157,6 +157,28 @@ class SongDelete(APIView):
     def delete(self, request, pk, format=None):
         song = self.get_object(pk)
         song.delete()      
+
+class LyricCreateAPIView(generics.CreateAPIView):
+    queryset = Lyric.objects.all()
+    serializer_class = LyricSerializer
+
+    def perform_create(self, serializer):
+        song_id = serializer.validated_data.get('song_id')
+        content  = serializer.validated_data.get('content')
+        if song_id is None:
+            song_id = song_id
+        serializer.save(song_id=song_id)
+
+        if content is None:
+            content = content
+        serializer.save(content=content)
+lyric_create_view = LyricCreateAPIView.as_view()   
+
+class LyricList(APIView):
+    def get(self, request, format=None):
+        music = Lyric.objects.all()
+        serializer = LyricSerializer(music, many=True)
+        return Response(serializer.data)
 
 class LyricUpdate(APIView):
     def get_object(self, pk):
@@ -206,6 +228,7 @@ def song_all_view(request,pk):
             serializer.save() 
             return Response(serializer.data)
 
+@api_view(['GET', 'POST'])
 def lyric_all_view(request,pk):
     if request.method == 'GET':
         if Lyric.object.fliter(pk = pk).exist():
